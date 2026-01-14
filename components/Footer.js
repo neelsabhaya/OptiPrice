@@ -1,6 +1,6 @@
 "use client";
 
-import { Github, Twitter, Linkedin, Mail, Heart } from "lucide-react";
+import { Github, BotMessageSquare, Linkedin, Mail, Heart } from "lucide-react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -24,9 +24,9 @@ export default function Footer() {
   };
 
   const socialLinks = [
-    { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
-    { icon: Github, href: "https://github.com", label: "GitHub" },
-    { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
+    { icon: Github, href: "https://github.com/neelsabhaya", label: "GitHub" },
+    { icon: BotMessageSquare, href: "https://discord.com/channels/neel_sabhaya", label: "BotMessage" },
+    { icon: Linkedin, href: "https://linkedin.com/in/neelsabhaya", label: "LinkedIn" },
     { icon: Mail, href: "mailto:contact@optiprice.com", label: "Email" },
   ];
 
