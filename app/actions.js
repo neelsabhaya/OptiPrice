@@ -66,18 +66,6 @@ export async function addProduct(formData) {
 
     if (error) throw error;
 
-    // Add to price history if it's a new product OR price changed
-    const shouldAddHistory =
-      !isUpdate || existingProduct.current_price !== newPrice;
-
-    if (shouldAddHistory) {
-      await supabase.from("price_history").insert({
-        product_id: product.id,
-        price: newPrice,
-        currency: currency,
-      });
-    }
-
     revalidatePath("/");
     return {
       success: true,

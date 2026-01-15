@@ -13,6 +13,11 @@ export async function POST(request) {
     }
 
     // Use service role to bypass RLS
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("❌ SUPABASE_SERVICE_ROLE_KEY is missing in environment variables");
+      return NextResponse.json({ error: "Service role key missing" }, { status: 500 });
+    }
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -64,13 +69,6 @@ export async function POST(request) {
           .eq("id", product.id);
 
         if (oldPrice !== newPrice) {
-          console.log(`\n💾 Saving to price_history...`)
-          await supabase.from("price_history").insert({
-            product_id: product.id,
-            price: newPrice,
-            currency: productData.currencyCode || product.currency,
-          });
-
           results.priceChanges++;
           results.debug.push(`Price changed: $${oldPrice} → $${newPrice}`);
 
