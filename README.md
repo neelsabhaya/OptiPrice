@@ -21,7 +21,7 @@ OptiPrice - Track product prices across e-commerce sites and get alerts on price
   - Google Authentication
   - Row Level Security (RLS)
   - pg_cron for scheduled jobs
-- **Gmail SMTP (Email Service) ** - Transactional emails
+- Gmail SMTP (Email Service) - Transactional emails
 - **shadcn/ui** - UI component library
 - **Recharts** - Interactive charts
 - **Tailwind CSS** - Styling
