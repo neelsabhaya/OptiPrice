@@ -109,6 +109,3 @@ export async function GET() {
     message: "Price check endpoint is working. Use POST to trigger.",
   });
 }
-
-
-

@@ -18,3 +18,7 @@ export async function GET(request) {
   // Return the user to an error page with instructions
   return NextResponse.redirect(new URL("/error", request.url));
 }
+
+
+
+// curl.exe -X POST http://localhost:3000/api/cron/check-prices -H "Authorization: Bearer dd582bfa5204cdffb674cb38284bd5387724273ab165d642ea8c7a6ad97c0d56
