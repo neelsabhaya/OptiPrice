@@ -23,10 +23,26 @@ export default function PriceChart({ productId }) {
     async function loadData() {
       const history = await getPriceHistory(productId);
 
-      const chartData = history.map((item) => ({
-        date: new Date(item.checked_at).toLocaleDateString(),
-        price: parseFloat(item.price),
-      }));
+      const chartData = history.map((item) => {
+        const date = new Date(item.checked_at);
+        return {
+          // Format for Canada Timezone (Eastern Time)
+          displayDate: date.toLocaleString("en-CA", {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+            timeZone: "America/Toronto", // Standard Canadian Eastern Time
+          }),
+          price: parseFloat(item.price),
+          fullDate: date.toLocaleString("en-CA", {
+            timeZone: "America/Toronto",
+            dateStyle: "medium",
+            timeStyle: "short",
+          }),
+        };
+      });
 
       setData(chartData);
       setLoading(false);
@@ -64,8 +80,8 @@ export default function PriceChart({ productId }) {
             stroke={theme === "dark" ? "#475569" : "#e5e7eb"}
           />
           <XAxis 
-            dataKey="date" 
-            tick={{ fontSize: 12, fill: theme === "dark" ? "#9ca3af" : "#6b7280" }} 
+            dataKey="displayDate" 
+            tick={{ fontSize: 10, fill: theme === "dark" ? "#9ca3af" : "#6b7280" }} 
             stroke={theme === "dark" ? "#475569" : "#e5e7eb"}
           />
           <YAxis 
@@ -73,6 +89,7 @@ export default function PriceChart({ productId }) {
             stroke={theme === "dark" ? "#475569" : "#e5e7eb"}
           />
           <Tooltip
+            labelKey="fullDate"
             contentStyle={{
               backgroundColor: theme === "dark" ? "#1e293b" : "white",
               border: `1px solid ${theme === "dark" ? "#475569" : "#e5e7eb"}`,
