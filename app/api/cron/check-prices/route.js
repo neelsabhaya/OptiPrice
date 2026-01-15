@@ -32,6 +32,7 @@ export async function POST(request) {
       failed: 0,
       priceChanges: 0,
       alertsSent: 0,
+      debug: [],
     };
 
     for (const product of products) {
@@ -46,6 +47,11 @@ export async function POST(request) {
         const newPrice = parseFloat(productData.currentPrice);
         const oldPrice = parseFloat(product.current_price);
 
+        console.log(`\n📊 [PRODUCT ${product.id}] Price comparison:`)
+        console.log(`   Old (DB): $${oldPrice}`)
+        console.log(`   New (Scraped): $${newPrice}`)
+        console.log(`   Match: ${oldPrice === newPrice ? '✅ Same' : '❌ Different'}`)
+
         await supabase
           .from("products")
           .update({
@@ -58,6 +64,7 @@ export async function POST(request) {
           .eq("id", product.id);
 
         if (oldPrice !== newPrice) {
+          console.log(`\n💾 Saving to price_history...`)
           await supabase.from("price_history").insert({
             product_id: product.id,
             price: newPrice,
@@ -65,13 +72,24 @@ export async function POST(request) {
           });
 
           results.priceChanges++;
+          results.debug.push(`Price changed: $${oldPrice} → $${newPrice}`);
+
+          console.log(`\n🔍 Checking if price dropped:`)
+          console.log(`   newPrice (${newPrice}) < oldPrice (${oldPrice}) = ${newPrice < oldPrice}`)
 
           if (newPrice < oldPrice) {
+            console.log(`💰 Price DROP detected for product ${product.id}: ${oldPrice} -> ${newPrice}`);
+            results.debug.push(`✅ Price Drop Detected: $${oldPrice} -> $${newPrice}. Attempting to send email...`);
+            
             const {
               data: { user },
             } = await supabase.auth.admin.getUserById(product.user_id);
 
-            if (user?.email) {
+            if (!user) {
+              results.debug.push(`❌ Failed: User ${product.user_id} not found`);
+            } else if (!user.email) {
+              results.debug.push(`❌ Failed: User ${product.user_id} has no email`);
+            } else {
               const emailResult = await sendPriceDropAlert(
                 user.email,
                 product,
@@ -81,8 +99,14 @@ export async function POST(request) {
 
               if (emailResult.success) {
                 results.alertsSent++;
+                results.debug.push(`✅ Email sent to ${user.email} successfully!`);
+              } else {
+                results.debug.push(`❌ Email failed: ${JSON.stringify(emailResult.error)}`);
               }
             }
+          } else {
+            const reason = newPrice > oldPrice ? "Price Increased" : "Price Same";
+            results.debug.push(`ℹ️ No alert: ${reason} ($${oldPrice} -> $${newPrice})`);
           }
         }
 
@@ -90,6 +114,7 @@ export async function POST(request) {
       } catch (error) {
         console.error(`Error processing product ${product.id}:`, error);
         results.failed++;
+        results.debug.push(`Error: ${error.message}`);
       }
     }
 
@@ -109,3 +134,10 @@ export async function GET() {
     message: "Price check endpoint is working. Use POST to trigger.",
   });
 }
+
+
+
+
+
+
+// curl.exe -X POST http://localhost:3000/api/cron/check-prices -H "Authorization: Bearer dd582bfa5204cdffb674cb38284bd5387724273ab165d642ea8c7a6ad97c0d56"
